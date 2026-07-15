@@ -1,44 +1,154 @@
-diff --git a/README.md b/README.md
-index ad22dbdef889e25bf920d6ba9c48460d1f875e7e..80dda4f6eeaf9142dffca074bd8f3da33fbf4610 100644
---- a/README.md
-+++ b/README.md
-@@ -1,2 +1,37 @@
--# rccgthebridgechicago
--RCCG The Bridge Chicago
-+# RCCG The Bridge Chicago DWELL 2026 Flyer Generator
-+
-+A standalone Next.js App Router application for creating personalised “I’m Attending” PNG flyers for **DWELL 2026: ELOHIM** by RCCG The Bridge Chicago.
-+
-+## Event
-+- Date: Friday, August 28, 2026
-+- Time: 6:00 PM CST
-+- Venue: RCCG Jesus House Chicago, 5224 N. Kedzie Avenue, Chicago, IL 60625
-+- Registration: https://thebridgechicago.org
-+
-+## Stack
-+Next.js, TypeScript, React, Tailwind CSS and the browser Canvas API. There is no database, authentication, Supabase, cloud storage, server-side upload or server-side photo processing.
-+
-+## Artwork
-+The approved artwork is `public/event/dwell-2026-share-template.png`. It must not be modified, recompressed, duplicated or replaced without rechecking alignment. Its verified dimensions are 1024 × 1536 pixels, and the generated PNG keeps that resolution.
-+
-+## Local development
-+```bash
-+npm install
-+npm run dev
-+npm run lint
-+npm run type-check
-+npm run test
-+npm run build
-+```
-+
-+## Browser-only privacy
-+Visitors choose a photo using a browser file input. The app uses `URL.createObjectURL`, draws the decoded image to a canvas, and revokes object URLs when replaced or unmounted. Photos are not uploaded, stored, sent to analytics or persisted in localStorage/IndexedDB.
-+
-+## Download and sharing
-+Generation exports the canvas with `canvas.toBlob` as `image/png`. Native sharing uses the Web Share API and shares the PNG file when `navigator.canShare` supports it; otherwise it falls back to title/text/URL sharing. WhatsApp uses an encoded `wa.me` text link, so users may need to download and attach the PNG manually. Copy Link uses `navigator.clipboard` with a textarea fallback.
-+
-+## Deployment
-+Deploy to Vercel as a standard Next.js app. Set `NEXT_PUBLIC_SITE_URL` to the deployed public URL. When unset, metadata and sharing fall back to `http://localhost:3000` or the current browser URL.
-+
-+## Updating the event later
-+Edit `config/flyer.ts` for event text, output filenames, share copy and all placement values. If artwork changes, keep it in `public/event/`, verify its dimensions programmatically, inspect the photo frame visually, update `config/flyer.ts`, and document the new coordinates in `FLYER_ALIGNMENT.md`.
+# RCCG The Bridge Chicago DWELL 2026 Flyer Generator
+
+A standalone Next.js application that allows attendees to generate a personalised **"I'm Attending"** flyer for **DWELL 2026: ELOHIM** by RCCG The Bridge Chicago.
+
+Visitors simply enter their name, upload a photo, adjust the positioning if needed, and instantly receive a high-quality flyer ready to download or share.
+
+---
+
+## Features
+
+- Personalised attendee flyer generation
+- Live canvas preview
+- Photo upload with drag repositioning
+- Zoom controls
+- Automatic PNG generation
+- Native device sharing (where supported)
+- Download as PNG
+- WhatsApp sharing
+- Registration link
+- Browser-only image processing (no uploads)
+
+---
+
+## Event Details
+
+**Event:** DWELL 2026: ELOHIM
+
+**Date:** Friday, August 28, 2026
+
+**Time:** 6:00 PM CST
+
+**Venue:** RCCG Jesus House Chicago  
+5224 N. Kedzie Avenue  
+Chicago, IL 60625
+
+**Registration:** https://thebridgechicago.org
+
+---
+
+## Technology Stack
+
+- Next.js (App Router)
+- React
+- TypeScript
+- Tailwind CSS
+- HTML Canvas API
+
+The application is completely client-side and does not require a database or backend services.
+
+---
+
+## Project Structure
+
+```
+app/
+components/
+config/
+lib/
+public/
+tests/
+```
+
+The flyer artwork is stored in:
+
+```
+public/event/dwell-2026-share-template.png
+```
+
+All event configuration, flyer positioning, colours and sharing settings are managed from:
+
+```
+config/flyer.ts
+```
+
+---
+
+## Local Development
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+Create a production build:
+
+```bash
+npm run build
+```
+
+Run the linter:
+
+```bash
+npm run lint
+```
+
+Run the TypeScript type check:
+
+```bash
+npm run type-check
+```
+
+Run tests:
+
+```bash
+npm run test
+```
+
+---
+
+## Privacy
+
+Visitor photos never leave the browser.
+
+Images are processed locally using the HTML Canvas API and are never uploaded, stored or transmitted to any server.
+
+---
+
+## Deployment
+
+The project is designed for deployment on Vercel.
+
+Set the following environment variable:
+
+```
+NEXT_PUBLIC_SITE_URL=https://your-domain.com
+```
+
+This ensures sharing links and metadata point to the correct production website.
+
+---
+
+## Updating for a Future Event
+
+Most future events only require updating:
+
+- `config/flyer.ts`
+- `public/event/` artwork
+
+If the flyer artwork changes, verify the new dimensions and adjust the photo frame and text positioning accordingly.
+
+---
+
+## Attribution
+
+Powered by **Velra**
+
+https://velra.co.uk
