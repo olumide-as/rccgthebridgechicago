@@ -1,3 +1,38 @@
-import { FlyerGenerator } from '@/components/flyer/flyer-generator';
-import { flyerConfig } from '@/config/flyer';
-export default function Home() { return <main className="min-h-screen bg-[#160d08] text-white"><section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"><div className="mb-8 max-w-3xl"><p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-200">{flyerConfig.organisationName}</p><h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">Create Your DWELL 2026 Flyer</h1><p className="mt-4 text-lg text-amber-50/85">Add your name and photo to create your personalised “I’m Attending” flyer for DWELL 2026: ELOHIM.</p></div><FlyerGenerator /><footer className="py-8 text-center text-sm text-amber-100/70">{flyerConfig.poweredByVelra}</footer></section></main>; }
+import { FlyerGenerator } from "@/components/flyer/flyer-generator";
+import { flyerConfig } from "@/config/flyer";
+
+export default function Home() {
+  return (
+    <main className="min-h-screen bg-[#160d08] text-white">
+      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-8 max-w-3xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-200">
+            {flyerConfig.organisationName}
+          </p>
+
+          <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">
+            Create Your DWELL 2026 Flyer
+          </h1>
+
+          <p className="mt-4 text-lg text-amber-50/85">
+            Add your name and photo to create your personalised
+            “I’m Attending” flyer for DWELL 2026: ELOHIM.
+          </p>
+        </div>
+
+        <FlyerGenerator />
+
+        <footer className="py-8 text-center text-sm">
+          <a
+            href={flyerConfig.poweredBy.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-amber-100/70 transition-colors hover:text-amber-300"
+          >
+            {flyerConfig.poweredBy.text}
+          </a>
+        </footer>
+      </section>
+    </main>
+  );
+}
