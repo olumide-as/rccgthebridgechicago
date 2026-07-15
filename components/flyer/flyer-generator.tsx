@@ -507,7 +507,7 @@ export function FlyerGenerator() {
                 setGeneratedBlob(null);
                 setError("");
               }}
-              placeholder="Olumide Adigun"
+              placeholder="Enter your name"
               className="w-full rounded-xl border border-white/20 bg-white px-4 py-3 text-stone-950"
             />
           </label>
