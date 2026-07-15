@@ -4,7 +4,7 @@ export const flyerConfig = {
   photo: { minimumZoom: 1, defaultZoom: 1, maximumZoom: 2.8 },
   name: {
   x: 512,
-  y: 1180,
+  y: 1200,
   maxWidth: 650,
   preferredFontSize: 50,
   minimumFontSize: 28,
@@ -19,6 +19,9 @@ export const flyerConfig = {
   shadowColour: "transparent",
   shadowBlur: 0,
 },
-  outputFilenamePrefix: 'dwell-2026', nativeShareTitle: 'DWELL 2026: ELOHIM', nativeShareText: 'I’m attending DWELL 2026: ELOHIM with RCCG The Bridge Chicago. Join us on Friday, August 28, 2026 at 6:00 PM CST.', whatsappShareText: 'I’m attending DWELL 2026: ELOHIM with RCCG The Bridge Chicago and City Shakers. Join us on Friday, August 28, 2026 at 6:00 PM CST. Register at https://thebridgechicago.org', pageTitle: 'Create Your DWELL 2026 Flyer | RCCG The Bridge Chicago', pageDescription: 'Add your name and photo to create your personalised “I’m Attending” flyer for DWELL 2026: ELOHIM.', privacyMessage: 'Your photo is processed in your browser and is not uploaded or stored.', poweredByVelra: 'Powered by Velra', publicSiteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000', maxNameLength: 60, maxFileSizeBytes: 12 * 1024 * 1024,
+  outputFilenamePrefix: 'dwell-2026', nativeShareTitle: 'DWELL 2026: ELOHIM', nativeShareText: 'I’m attending DWELL 2026: ELOHIM with RCCG The Bridge Chicago. Join us on Friday, August 28, 2026 at 6:00 PM CST.', whatsappShareText: 'I’m attending DWELL 2026: ELOHIM with RCCG The Bridge Chicago and City Shakers. Join us on Friday, August 28, 2026 at 6:00 PM CST. Register at https://thebridgechicago.org', pageTitle: 'Create Your DWELL 2026 Flyer | RCCG The Bridge Chicago', pageDescription: 'Add your name and photo to create your personalised “I’m Attending” flyer for DWELL 2026: ELOHIM.', privacyMessage: 'Your photo is processed in your browser and is not uploaded or stored.', poweredBy: {
+  text: "Powered by Velra",
+  url: "https://velra.co.uk",
+}, publicSiteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000', maxNameLength: 60, maxFileSizeBytes: 12 * 1024 * 1024,
 } as const;
 export type FlyerConfig = typeof flyerConfig;
