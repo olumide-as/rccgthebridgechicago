@@ -52,6 +52,8 @@ export function FlyerGenerator() {
   });
 
   const [minimumZoom, setMinimumZoom] = useState(1);
+  const [isAdjustingPhoto, setIsAdjustingPhoto] =
+    useState(false);
   const [artworkReady, setArtworkReady] = useState(false);
   const [photoReady, setPhotoReady] = useState(false);
 
@@ -290,8 +292,9 @@ export function FlyerGenerator() {
       });
 
       setPhotoReady(true);
+      setIsAdjustingPhoto(false);
       setStatus(
-        "Photo ready. Drag the preview or adjust the zoom.",
+        "Photo ready. Use Adjust photo to reposition it, or change the zoom.",
       );
     };
 
@@ -419,10 +422,16 @@ export function FlyerGenerator() {
       <div className="flex justify-center lg:sticky lg:top-6 lg:self-start">
         <FlyerCanvas
           ref={canvasRef}
+          isAdjustingPhoto={isAdjustingPhoto}
           onPointerDown={(event) => {
-            if (!photoReady) {
+            if (
+              !photoReady ||
+              !isAdjustingPhoto
+            ) {
               return;
             }
+
+            event.preventDefault();
 
             event.currentTarget.setPointerCapture(
               event.pointerId,
@@ -443,6 +452,7 @@ export function FlyerGenerator() {
             const drag = dragRef.current;
 
             if (
+              !isAdjustingPhoto ||
               !drag ||
               drag.pointerId !== event.pointerId
             ) {
@@ -537,28 +547,44 @@ export function FlyerGenerator() {
               minimumZoom *
               flyerConfig.photo.maximumZoom
             }
+            isAdjusting={
+              isAdjustingPhoto
+            }
+            onToggleAdjusting={() => {
+              const nextAdjusting =
+                !isAdjustingPhoto;
+
+              dragRef.current = null;
+              setIsAdjustingPhoto(
+                nextAdjusting,
+              );
+
+              setStatus(
+                nextAdjusting
+                  ? "Drag the photo on the flyer, then tap Done adjusting."
+                  : "Photo position updated. Page scrolling is restored.",
+              );
+            }}
             onZoom={(zoom) =>
               updateCropState({
                 ...cropState,
                 zoom,
               })
             }
-            onReset={() =>
+            onReset={() => {
+              dragRef.current = null;
+              setIsAdjustingPhoto(false);
+
               updateCropState({
                 zoom: minimumZoom,
                 offsetX: 0,
                 offsetY: 0,
-              })
-            }
-            onNudge={(x, y) =>
-              updateCropState({
-                ...cropState,
-                offsetX:
-                  cropState.offsetX + x,
-                offsetY:
-                  cropState.offsetY + y,
-              })
-            }
+              });
+
+              setStatus(
+                "Photo position and zoom reset.",
+              );
+            }}
           />
 
           <div
