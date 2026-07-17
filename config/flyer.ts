@@ -37,7 +37,7 @@ export const flyerConfig = {
   },
   message: {
     x: 512,
-    y: 1260,
+    y: 1240,
     maxWidth: 680,
     preferredFontSize: 28,
     minimumFontSize: 20,
