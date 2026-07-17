@@ -41,25 +41,24 @@ export function FlyerGenerator() {
   const photoRef = useRef<LoadedImage | null>(null);
   const objectUrlRef = useRef<string | null>(null);
   const dragRef = useRef<DragState | null>(null);
-
   const generationSequenceRef = useRef(0);
 
   const [name, setName] = useState("");
+  const [message, setMessage] = useState<string>(
+    flyerConfig.messages[0],
+  );
   const [cropState, setCropState] = useState<CropState>({
     zoom: 1,
     offsetX: 0,
     offsetY: 0,
   });
-
   const [minimumZoom, setMinimumZoom] = useState(1);
   const [isAdjustingPhoto, setIsAdjustingPhoto] =
     useState(false);
   const [artworkReady, setArtworkReady] = useState(false);
   const [photoReady, setPhotoReady] = useState(false);
-
   const [generatedBlob, setGeneratedBlob] =
     useState<Blob | null>(null);
-
   const [isPreparing, setIsPreparing] = useState(false);
   const [status, setStatus] = useState(
     "Add your name and photo to begin.",
@@ -77,15 +76,11 @@ export function FlyerGenerator() {
   );
 
   const canPrepare = Boolean(
-    normalisedName &&
-      photoReady &&
-      artworkReady,
+    normalisedName && photoReady && artworkReady,
   );
 
   const flyerReady = Boolean(
-    generatedBlob &&
-      canPrepare &&
-      !isPreparing,
+    generatedBlob && canPrepare && !isPreparing,
   );
 
   const drawPreview = useCallback(async () => {
@@ -99,9 +94,7 @@ export function FlyerGenerator() {
     const context = canvas.getContext("2d");
 
     if (!context) {
-      setError(
-        "Canvas is not available in this browser.",
-      );
+      setError("Canvas is not available in this browser.");
       return;
     }
 
@@ -113,12 +106,9 @@ export function FlyerGenerator() {
       photoRef.current || undefined,
       photoReady ? cropState : undefined,
       normalisedName || undefined,
+      message || undefined,
     );
-  }, [
-    cropState,
-    normalisedName,
-    photoReady,
-  ]);
+  }, [cropState, message, normalisedName, photoReady]);
 
   useEffect(() => {
     const image = new Image() as LoadedImage;
@@ -126,18 +116,13 @@ export function FlyerGenerator() {
     image.onload = () => {
       image.width = image.naturalWidth;
       image.height = image.naturalHeight;
-
       artworkRef.current = image;
       setArtworkReady(true);
-      setStatus(
-        "Artwork ready. Add your name and photo.",
-      );
+      setStatus("Artwork ready. Add your name and photo.");
     };
 
     image.onerror = () => {
-      setError(
-        "The official flyer artwork could not be loaded.",
-      );
+      setError("The official flyer artwork could not be loaded.");
     };
 
     image.src = flyerConfig.artworkPath;
@@ -148,18 +133,11 @@ export function FlyerGenerator() {
       void drawPreview();
     });
 
-    return () => {
-      cancelAnimationFrame(animationFrame);
-    };
+    return () => cancelAnimationFrame(animationFrame);
   }, [drawPreview, artworkReady]);
 
-  /*
-   * Automatically prepare a fresh PNG after the user stops
-   * changing their name, zoom or photo position.
-   */
   useEffect(() => {
     const sequence = ++generationSequenceRef.current;
-
     setGeneratedBlob(null);
 
     if (!canPrepare) {
@@ -173,7 +151,6 @@ export function FlyerGenerator() {
     const timer = window.setTimeout(async () => {
       try {
         await drawPreview();
-
         const canvas = canvasRef.current;
 
         if (!canvas) {
@@ -182,47 +159,28 @@ export function FlyerGenerator() {
 
         const blob = await canvasToBlob(canvas);
 
-        /*
-         * Ignore an outdated result if the user changed the
-         * name or photo while this version was being created.
-         */
-        if (
-          generationSequenceRef.current !== sequence
-        ) {
+        if (generationSequenceRef.current !== sequence) {
           return;
         }
 
         setGeneratedBlob(blob);
-        setStatus(
-          "Your flyer is ready to share or save.",
-        );
+        setStatus("Your flyer is ready to share or save.");
       } catch {
-        if (
-          generationSequenceRef.current === sequence
-        ) {
+        if (generationSequenceRef.current === sequence) {
           setError(
             "We could not prepare your flyer. Please try again.",
           );
           setStatus("Flyer preparation failed.");
         }
       } finally {
-        if (
-          generationSequenceRef.current === sequence
-        ) {
+        if (generationSequenceRef.current === sequence) {
           setIsPreparing(false);
         }
       }
     }, 300);
 
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [
-    canPrepare,
-    cropState,
-    drawPreview,
-    normalisedName,
-  ]);
+    return () => window.clearTimeout(timer);
+  }, [canPrepare, cropState, drawPreview, message, normalisedName]);
 
   useEffect(() => {
     return () => {
@@ -241,42 +199,30 @@ export function FlyerGenerator() {
     }
 
     if (!file.type.startsWith("image/")) {
-      setError(
-        "Please choose a supported image file.",
-      );
+      setError("Please choose a supported image file.");
       return;
     }
 
-    if (
-      file.size >
-      flyerConfig.maxFileSizeBytes
-    ) {
-      setError(
-        "Please choose an image smaller than 12 MB.",
-      );
+    if (file.size > flyerConfig.maxFileSizeBytes) {
+      setError("Please choose an image smaller than 12 MB.");
       return;
     }
 
     setPhotoReady(false);
+    setIsAdjustingPhoto(false);
     setStatus("Loading image…");
 
-    const objectUrl =
-      URL.createObjectURL(file);
-
+    const objectUrl = URL.createObjectURL(file);
     const image = new Image() as LoadedImage;
 
     image.onload = () => {
       if (objectUrlRef.current) {
-        URL.revokeObjectURL(
-          objectUrlRef.current,
-        );
+        URL.revokeObjectURL(objectUrlRef.current);
       }
 
       objectUrlRef.current = objectUrl;
-
       image.width = image.naturalWidth;
       image.height = image.naturalHeight;
-
       photoRef.current = image;
 
       const initialZoom = coverScale(
@@ -290,11 +236,9 @@ export function FlyerGenerator() {
         offsetX: 0,
         offsetY: 0,
       });
-
       setPhotoReady(true);
-      setIsAdjustingPhoto(false);
       setStatus(
-        "Photo ready. Use Adjust photo to reposition it, or change the zoom.",
+        "Photo ready. Choose your message, then adjust the photo if needed.",
       );
     };
 
@@ -309,13 +253,9 @@ export function FlyerGenerator() {
     image.src = objectUrl;
   }
 
-  function updateCropState(
-    nextState: CropState,
-  ) {
+  function updateCropState(nextState: CropState) {
     const image = photoRef.current;
-
     setGeneratedBlob(null);
-
     setCropState(
       image
         ? clampOffsets(
@@ -332,11 +272,8 @@ export function FlyerGenerator() {
       return;
     }
 
-    const objectUrl =
-      URL.createObjectURL(generatedBlob);
-
+    const objectUrl = URL.createObjectURL(generatedBlob);
     const link = document.createElement("a");
-
     link.href = objectUrl;
     link.download = outputFilename;
     link.click();
@@ -361,9 +298,7 @@ export function FlyerGenerator() {
         filename: outputFilename,
         title: flyerConfig.nativeShareTitle,
         text: flyerConfig.nativeShareText,
-        url: publicPageUrl(
-          flyerConfig.publicSiteUrl,
-        ),
+        url: publicPageUrl(flyerConfig.publicSiteUrl),
       });
 
       setStatus(
@@ -385,12 +320,7 @@ export function FlyerGenerator() {
 
   async function copyPageLink() {
     try {
-      await copyText(
-        publicPageUrl(
-          flyerConfig.publicSiteUrl,
-        ),
-      );
-
+      await copyText(publicPageUrl(flyerConfig.publicSiteUrl));
       setStatus("Link copied successfully.");
     } catch {
       setError(
@@ -399,21 +329,12 @@ export function FlyerGenerator() {
     }
   }
 
-  function getPointerScale(
-    canvas: HTMLCanvasElement,
-  ) {
-    const rect =
-      canvas.getBoundingClientRect();
+  function getPointerScale(canvas: HTMLCanvasElement) {
+    const rect = canvas.getBoundingClientRect();
 
     return {
-      x:
-        rect.width > 0
-          ? canvas.width / rect.width
-          : 1,
-      y:
-        rect.height > 0
-          ? canvas.height / rect.height
-          : 1,
+      x: rect.width > 0 ? canvas.width / rect.width : 1,
+      y: rect.height > 0 ? canvas.height / rect.height : 1,
     };
   }
 
@@ -424,29 +345,19 @@ export function FlyerGenerator() {
           ref={canvasRef}
           isAdjustingPhoto={isAdjustingPhoto}
           onPointerDown={(event) => {
-            if (
-              !photoReady ||
-              !isAdjustingPhoto
-            ) {
+            if (!photoReady || !isAdjustingPhoto) {
               return;
             }
 
             event.preventDefault();
-
-            event.currentTarget.setPointerCapture(
-              event.pointerId,
-            );
-
+            event.currentTarget.setPointerCapture(event.pointerId);
             dragRef.current = {
               pointerId: event.pointerId,
               clientX: event.clientX,
               clientY: event.clientY,
               cropState,
             };
-
-            setStatus(
-              "Adjusting photo position…",
-            );
+            setStatus("Adjusting photo position…");
           }}
           onPointerMove={(event) => {
             const drag = dragRef.current;
@@ -460,34 +371,24 @@ export function FlyerGenerator() {
             }
 
             event.preventDefault();
-
-            const scale = getPointerScale(
-              event.currentTarget,
-            );
+            const scale = getPointerScale(event.currentTarget);
 
             updateCropState({
               ...drag.cropState,
               offsetX:
                 drag.cropState.offsetX +
-                (event.clientX -
-                  drag.clientX) *
-                  scale.x,
+                (event.clientX - drag.clientX) * scale.x,
               offsetY:
                 drag.cropState.offsetY +
-                (event.clientY -
-                  drag.clientY) *
-                  scale.y,
+                (event.clientY - drag.clientY) * scale.y,
             });
           }}
           onPointerUp={(event) => {
             if (
-              dragRef.current?.pointerId ===
-              event.pointerId
+              dragRef.current?.pointerId === event.pointerId
             ) {
               dragRef.current = null;
-              setStatus(
-                "Photo position updated.",
-              );
+              setStatus("Photo position updated.");
             }
           }}
           onPointerCancel={() => {
@@ -503,15 +404,10 @@ export function FlyerGenerator() {
 
         <div className="space-y-5">
           <label className="block">
-            <span className="mb-2 block font-bold">
-              Your Name
-            </span>
-
+            <span className="mb-2 block font-bold">Your Name</span>
             <input
               value={name}
-              maxLength={
-                flyerConfig.maxNameLength
-              }
+              maxLength={flyerConfig.maxNameLength}
               onChange={(event) => {
                 setName(event.target.value);
                 setGeneratedBlob(null);
@@ -524,16 +420,34 @@ export function FlyerGenerator() {
 
           <label className="block">
             <span className="mb-2 block font-bold">
+              Your Message
+            </span>
+            <select
+              value={message}
+              onChange={(event) => {
+                setMessage(event.target.value);
+                setGeneratedBlob(null);
+                setError("");
+              }}
+              className="w-full rounded-xl border border-white/20 bg-white px-4 py-3 text-stone-950"
+            >
+              {flyerConfig.messages.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block">
+            <span className="mb-2 block font-bold">
               Choose Your Photo
             </span>
-
             <input
               type="file"
               accept="image/*"
               onChange={(event) =>
-                loadPhoto(
-                  event.target.files?.[0],
-                )
+                loadPhoto(event.target.files?.[0])
               }
               className="w-full rounded-xl border border-dashed border-amber-200/60 p-3"
             />
@@ -544,21 +458,13 @@ export function FlyerGenerator() {
             zoom={cropState.zoom}
             min={minimumZoom}
             max={
-              minimumZoom *
-              flyerConfig.photo.maximumZoom
+              minimumZoom * flyerConfig.photo.maximumZoom
             }
-            isAdjusting={
-              isAdjustingPhoto
-            }
+            isAdjusting={isAdjustingPhoto}
             onToggleAdjusting={() => {
-              const nextAdjusting =
-                !isAdjustingPhoto;
-
+              const nextAdjusting = !isAdjustingPhoto;
               dragRef.current = null;
-              setIsAdjustingPhoto(
-                nextAdjusting,
-              );
-
+              setIsAdjustingPhoto(nextAdjusting);
               setStatus(
                 nextAdjusting
                   ? "Drag the photo on the flyer, then tap Done adjusting."
@@ -566,24 +472,17 @@ export function FlyerGenerator() {
               );
             }}
             onZoom={(zoom) =>
-              updateCropState({
-                ...cropState,
-                zoom,
-              })
+              updateCropState({ ...cropState, zoom })
             }
             onReset={() => {
               dragRef.current = null;
               setIsAdjustingPhoto(false);
-
               updateCropState({
                 zoom: minimumZoom,
                 offsetX: 0,
                 offsetY: 0,
               });
-
-              setStatus(
-                "Photo position and zoom reset.",
-              );
+              setStatus("Photo position and zoom reset.");
             }}
           />
 
@@ -607,9 +506,7 @@ export function FlyerGenerator() {
             <button
               type="button"
               disabled={!flyerReady}
-              onClick={
-                shareGeneratedFlyer
-              }
+              onClick={shareGeneratedFlyer}
               className="rounded-xl bg-amber-300 px-4 py-3 font-black text-stone-950 disabled:cursor-not-allowed disabled:opacity-50 sm:col-span-2"
             >
               {isPreparing
@@ -627,9 +524,7 @@ export function FlyerGenerator() {
             </button>
 
             <a
-              href={whatsappUrl(
-                flyerConfig.whatsappShareText,
-              )}
+              href={whatsappUrl(flyerConfig.whatsappShareText)}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-xl bg-green-500 px-4 py-3 text-center font-bold text-white"
@@ -646,9 +541,7 @@ export function FlyerGenerator() {
             </button>
 
             <a
-              href={
-                flyerConfig.registrationUrl
-              }
+              href={flyerConfig.registrationUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-xl bg-amber-100 px-4 py-3 text-center font-bold text-stone-950"
@@ -656,8 +549,6 @@ export function FlyerGenerator() {
               Register for DWELL 2026
             </a>
           </div>
-
-  
         </div>
       </div>
     </div>
