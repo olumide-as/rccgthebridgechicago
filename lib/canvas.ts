@@ -24,17 +24,20 @@ export function roundedRect(
   ctx.closePath();
 }
 
-export function resolveCanvasFontFamily(): string {
+function resolveCanvasFontFamily(config: {
+  fontFamilyVariable: string;
+  fallbackFontFamily: string;
+}): string {
   if (typeof window === "undefined") {
-    return flyerConfig.name.fallbackFontFamily;
+    return config.fallbackFontFamily;
   }
 
   const styles = window.getComputedStyle(document.body);
   const loadedFamily = styles
-    .getPropertyValue(flyerConfig.name.fontFamilyVariable)
+    .getPropertyValue(config.fontFamilyVariable)
     .trim();
 
-  return loadedFamily || flyerConfig.name.fallbackFontFamily;
+  return loadedFamily || config.fallbackFontFamily;
 }
 
 export function fitText(
@@ -58,10 +61,7 @@ export function fitText(
     ctx.font = createFont(fontSize);
 
     if (ctx.measureText(displayText).width <= options.maxWidth) {
-      return {
-        fontSize,
-        text: displayText,
-      };
+      return { fontSize, text: displayText };
     }
 
     fontSize -= 2;
@@ -82,12 +82,37 @@ export function fitText(
   };
 }
 
+function drawConfiguredText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  config: typeof flyerConfig.name | typeof flyerConfig.message,
+) {
+  const fontFamily = resolveCanvasFontFamily(config);
+  const displayText = config.uppercase ? text.toUpperCase() : text;
+  const fitted = fitText(ctx, displayText, {
+    fontFamily,
+    fontWeight: config.fontWeight,
+    preferred: config.preferredFontSize,
+    minimum: config.minimumFontSize,
+    maxWidth: config.maxWidth,
+  });
+
+  ctx.save();
+  ctx.textAlign = config.textAlign;
+  ctx.textBaseline = "middle";
+  ctx.font = `${config.fontWeight} ${fitted.fontSize}px ${fontFamily}`;
+  ctx.fillStyle = config.colour;
+  ctx.fillText(fitted.text, config.x, config.y, config.maxWidth);
+  ctx.restore();
+}
+
 export function renderFlyer(
   ctx: CanvasRenderingContext2D,
   artwork: CanvasImageSource,
   photo?: CanvasImageSource & ImageSize,
   state?: CropState,
   name?: string,
+  message?: string,
 ) {
   const config = flyerConfig;
 
@@ -102,7 +127,6 @@ export function renderFlyer(
 
   if (photo && state) {
     ctx.save();
-
     roundedRect(
       ctx,
       config.photoFrame.x,
@@ -111,42 +135,17 @@ export function renderFlyer(
       config.photoFrame.height,
       config.photoFrame.cornerRadius,
     );
-
     ctx.clip();
     drawCoverImage(ctx, photo, config.photoFrame, state);
     ctx.restore();
   }
 
-  if (name) {
-    const fontFamily = resolveCanvasFontFamily();
-    const displayName = config.name.uppercase
-      ? name.toUpperCase()
-      : name;
+  if (name?.trim()) {
+    drawConfiguredText(ctx, name.trim(), config.name);
+  }
 
-    const fitted = fitText(ctx, displayName, {
-      fontFamily,
-      fontWeight: config.name.fontWeight,
-      preferred: config.name.preferredFontSize,
-      minimum: config.name.minimumFontSize,
-      maxWidth: config.name.maxWidth,
-    });
-
-    ctx.save();
-
-    ctx.textAlign = config.name.textAlign;
-    ctx.textBaseline = "middle";
-    ctx.font =
-      `${config.name.fontWeight} ${fitted.fontSize}px ${fontFamily}`;
-
-    ctx.fillStyle = config.name.colour;
-    ctx.fillText(
-      fitted.text,
-      config.name.x,
-      config.name.y,
-      config.name.maxWidth,
-    );
-
-    ctx.restore();
+  if (message?.trim()) {
+    drawConfiguredText(ctx, message.trim(), config.message);
   }
 }
 
