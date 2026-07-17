@@ -1,2 +1,89 @@
-'use client';
-export function PhotoControls({ zoom, min, max, disabled, onZoom, onReset, onNudge }: { zoom:number; min:number; max:number; disabled:boolean; onZoom:(v:number)=>void; onReset:()=>void; onNudge:(x:number,y:number)=>void }) { return <fieldset className="space-y-3" disabled={disabled}><legend className="text-base font-bold text-white">Adjust Your Photo</legend><label className="block text-sm font-medium text-amber-50" htmlFor="zoom">Zoom <span className="text-amber-200">{zoom.toFixed(2)}×</span></label><input id="zoom" type="range" min={min} max={max} step="0.01" value={zoom} onChange={(e)=>onZoom(Number(e.target.value))} className="w-full accent-amber-300" /><div className="grid grid-cols-3 gap-2" aria-label="Photo Position"><button type="button" className="rounded-lg bg-white/10 px-3 py-2" onClick={()=>onNudge(0,-12)}>Up</button><button type="button" className="rounded-lg bg-white/10 px-3 py-2" onClick={()=>onNudge(-12,0)}>Left</button><button type="button" className="rounded-lg bg-white/10 px-3 py-2" onClick={()=>onNudge(12,0)}>Right</button><button type="button" className="rounded-lg bg-white/10 px-3 py-2" onClick={()=>onNudge(0,12)}>Down</button><button type="button" className="col-span-2 rounded-lg bg-amber-200 px-3 py-2 font-bold text-stone-950" onClick={onReset}>Reset Photo</button></div><p className="text-xs text-amber-50/70">Drag on the preview or use these buttons to reposition the photo.</p></fieldset>; }
+"use client";
+
+type PhotoControlsProps = {
+  zoom: number;
+  min: number;
+  max: number;
+  disabled: boolean;
+  isAdjusting: boolean;
+  onZoom: (value: number) => void;
+  onReset: () => void;
+  onToggleAdjusting: () => void;
+};
+
+export function PhotoControls({
+  zoom,
+  min,
+  max,
+  disabled,
+  isAdjusting,
+  onZoom,
+  onReset,
+  onToggleAdjusting,
+}: PhotoControlsProps) {
+  return (
+    <fieldset
+      className="space-y-4 rounded-2xl border border-white/15 bg-white/5 p-4"
+      disabled={disabled}
+    >
+      <legend className="px-1 text-base font-bold text-white">
+        Adjust Your Photo
+      </legend>
+
+      <button
+        type="button"
+        onClick={onToggleAdjusting}
+        aria-pressed={isAdjusting}
+        className={[
+          "w-full rounded-xl px-4 py-3 font-bold transition",
+          isAdjusting
+            ? "bg-amber-100 text-stone-950"
+            : "bg-white/10 text-white hover:bg-white/15",
+        ].join(" ")}
+      >
+        {isAdjusting
+          ? "Done adjusting"
+          : "Adjust photo position"}
+      </button>
+
+      {isAdjusting && (
+        <p className="rounded-xl bg-amber-200/10 px-3 py-2 text-sm text-amber-50">
+          Drag the photo on the flyer, then tap Done adjusting.
+        </p>
+      )}
+
+      <div className="space-y-2">
+        <label
+          className="flex items-center justify-between gap-3 text-sm font-medium text-amber-50"
+          htmlFor="zoom"
+        >
+          <span>Zoom</span>
+          <span className="text-amber-200">
+            {zoom.toFixed(2)}×
+          </span>
+        </label>
+
+        <input
+          id="zoom"
+          type="range"
+          min={min}
+          max={max}
+          step="0.01"
+          value={zoom}
+          onChange={(event) =>
+            onZoom(Number(event.target.value))
+          }
+          className="w-full accent-amber-300"
+        />
+      </div>
+
+      <button
+        type="button"
+        className="w-full rounded-xl bg-white/10 px-4 py-3 font-bold text-white hover:bg-white/15"
+        onClick={onReset}
+      >
+        Reset photo
+      </button>
+    </fieldset>
+  );
+}
